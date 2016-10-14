@@ -31,8 +31,12 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.security.MessageDigest;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -63,11 +67,7 @@ public class Main {
     private final static ValueFactory F = SimpleValueFactory.getInstance();
 	private final static SimpleDateFormat SDF = new SimpleDateFormat("dd-MM-yyyy");
     
-	private final static String DOM_BELGIF = "http://pubserv.belgif.be";
-	private final static String PREFIX_LANG = "http://publications.europa.eu/resource/authority/language/";
-	private final static String PREFIX_DDEIO = "http://dd.eionet.europa.eu/vocabulary/lau2/be/";
-	private final static String PREFIX_CPSV = "http://purl.org/vocab/cpsv#";
-	
+	private final static String DOM_BELGIF = "http://pubserv.belgif.be";	
     private static String domain = null;
     
 	
@@ -77,10 +77,28 @@ public class Main {
 	 * @param id short code
 	 * @return IRI
 	 */
-	private static IRI createID(String id) {
-		return F.createIRI(DOM_BELGIF + "/fedict/" + id);
+	private static IRI serviceID(String id) {
+		return F.createIRI(DOM_BELGIF + "/service/" + id);
 	}
 	
+	/**
+	 * Create IRI for a cost 
+	 * 
+	 * @param cost text
+	 * @return IRI
+	 */
+	private static IRI costID(String cost) {
+		// Try to map different wordings of "free" to the same IRI
+		String id = Consts.FREE.contains(cost) ? "zero" : DigestUtils.sha1Hex(cost);
+		return F.createIRI(DOM_BELGIF + "/cost/" + id);
+	}
+	
+	/**
+	 * Create language IRI identifier
+	 * 
+	 * @param code short language code
+	 * @return IRI
+	 */
 	private static IRI createLangID(String code) {
 		String term = "";
 		switch(code) {
@@ -89,18 +107,58 @@ public class Main {
 			case "ENG": term = "ENG"; break;
 			case "DE": term = "DEU"; break;
 		}
-		return F.createIRI(PREFIX_LANG + term);
+		return F.createIRI(Consts.PREFIX_LANG + term);
 	}
 	
-	private static IRI createCityID(String nis) {
-		return F.createIRI(PREFIX_DDEIO + nis);
+	
+	/**
+	 * Process the list of cities and match to a complete region(s) in Belgium.
+	 * 
+	 * @param p list of mapped municipalities
+	 */
+	private static List<IRI> regionalize(List<MunicipalityProjection> p) {
+		List<IRI> regions = new ArrayList<>();
+		// cheating: just count them
+		switch (p.size()) {
+			case 9:
+				regions.add(Consts.ID_GER);
+				break;
+			case 19:
+				regions.add(Consts.ID_BXL);
+				break;
+			case 253:
+				regions.add(Consts.ID_WAL_EX_GER);
+				break;
+			case 262:
+				regions.add(Consts.ID_WAL);
+				break;
+			case 281:
+				regions.add(Consts.ID_BXL);
+				regions.add(Consts.ID_WAL);
+				break;
+			case 308: 
+				regions.add(Consts.ID_VLA);
+				break;
+			case 327:
+				regions.add(Consts.ID_BXL);
+				regions.add(Consts.ID_VLA);
+				break;
+			case 589: 
+				regions.add(Consts.ID_BXL);
+				regions.add(Consts.ID_VLA);
+				regions.add(Consts.ID_WAL);
+				break;
+			default:
+				LOG.error("Not found for {}", p.size());
+		}
+		return regions;
 	}
 	
 	/**
 	 * Process one of the EDRL / XML files, adding info to the RDF model.
 	 * 
 	 * @param f file to process
-	 * @param m model
+	 * @param m RDF model
 	 * @throws IOException 
 	 */
 	private static void processFile(File f, Model m) throws IOException {
@@ -111,20 +169,24 @@ public class Main {
 			LOG.warn("Not a procedure");
 			return;
 		}
-		IRI id = createID(p.getID());
+		IRI id = serviceID(p.getID());
 		String lang = p.getLanguage().toLowerCase();
 		
-		m.add(id, RDFS.CLASS, F.createIRI(PREFIX_CPSV + "PublicService"));
+		m.add(id, RDFS.CLASS, Consts.CLASS_CPSV);
 		m.add(id, DCTERMS.TITLE, F.createLiteral(p.getTitle(), lang));
 		m.add(id, DCTERMS.DESCRIPTION, F.createLiteral(p.getDesc(), lang));
 		m.add(id, DCTERMS.ABSTRACT, F.createLiteral(p.getApplies(), lang));
 		m.add(id, DCTERMS.LANGUAGE, createLangID(lang));
-		
-		for (MunicipalityProjection c: p.getCities()) {
-			m.add(id, DCTERMS.SPATIAL, createCityID(c.getNisCode()));
+
+		for (IRI region: regionalize(p.getCities())) {
+			m.add(id, DCTERMS.SPATIAL, region);
 		}
 		
-	//	m.add(id, DCTERMS.DESCRIPTION, F.createLiteral(p.getLanguage()));
+		String price = p.getPrice();
+		IRI cost = costID(price);
+		m.add(id, Consts.CLASS_HAS_COST, cost);
+		m.add(cost, RDFS.CLASS, Consts.CLASS_COST);
+		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
 	}
 	
     /**
