@@ -107,7 +107,7 @@ public class Main {
 		switch(code) {
 			case "NL": term = "NED"; break;
 			case "FR": term = "FRA"; break;
-			case "ENG": term = "ENG"; break;
+			case "EN": term = "ENG"; break;
 			case "DE": term = "DEU"; break;
 		}
 		return F.createIRI(Consts.PREFIX_LANG + term);
