@@ -23,7 +23,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fedict.lodtools.cpsv;
+package be.fedict.lodtools.cpsv.proj;
 
 import org.xmlbeam.annotation.XBRead;
 
@@ -32,14 +32,6 @@ import org.xmlbeam.annotation.XBRead;
  * 
  * @author Bart.Hanssens
  */
-public interface MunicipalityProjection {
-	@XBRead("fedict.edrl.domain.Municipality/nisCode")
-	public String getNisCode();
+public interface IndicatorProjection {
 	
-	@XBRead("fedict.edrl.domain.Municipality/postCode")
-	public String getZipCode();
-
-	@XBRead("fedict.edrl.domain.Municipality/name")
-	public String getName();
-
 }

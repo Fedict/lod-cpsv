@@ -23,9 +23,8 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fedict.lodtools.cpsv;
+package be.fedict.lodtools.cpsv.proj;
 
-import java.util.List;
 import org.xmlbeam.annotation.XBRead;
 
 /**
@@ -33,34 +32,23 @@ import org.xmlbeam.annotation.XBRead;
  * 
  * @author Bart.Hanssens
  */
-public interface ProcedureProjection {
-	@XBRead("/fedict.edrl.domain.Procedure/contentId")
-	public String getID();
+public interface AddressProjection {
+	@XBRead("nisCode")
+	public String getNisCode();
+	
+	@XBRead("postcode")
+	public String getZipCode();
 
-	@XBRead("/fedict.edrl.domain.Procedure/language")
-	public String getLanguage();
+	@XBRead("building")
+	public String getBuilding();
 
-	@XBRead("/fedict.edrl.domain.Procedure/lifecycle")
-	public String getLifecycle();
+	@XBRead("street")
+	public String getStreet();
+	
+	@XBRead("number")
+	public String getNumber();
+	
+	@XBRead("box")
+	public String getBox();
 
-	@XBRead("/fedict.edrl.domain.Procedure/title")
-	public String getTitle();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/shortDescription")
-	public String getDesc();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/applicationSummary")
-	public String getSummary();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/applicableTo")
-	public String getApplies();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/applicableExceptions")
-	public String getAppliesExcept();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/formalities")
-	public String getFormalities();
-
-	@XBRead("/fedict.edrl.domain.Procedure/responsibleAdministration/municipalities")	
-	public List<MunicipalityProjection> getCities();
 }

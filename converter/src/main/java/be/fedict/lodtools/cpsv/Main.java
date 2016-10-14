@@ -25,6 +25,8 @@
  */
 package be.fedict.lodtools.cpsv;
 
+import be.fedict.lodtools.cpsv.proj.ProcedureProjection;
+import be.fedict.lodtools.cpsv.proj.MunicipalityProjection;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
