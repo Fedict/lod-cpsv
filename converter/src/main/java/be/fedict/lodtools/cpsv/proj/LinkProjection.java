@@ -25,8 +25,6 @@
  */
 package be.fedict.lodtools.cpsv.proj;
 
-import be.fedict.lodtools.cpsv.proj.MunicipalityProjection;
-import java.util.List;
 import org.xmlbeam.annotation.XBRead;
 
 /**
@@ -34,46 +32,10 @@ import org.xmlbeam.annotation.XBRead;
  * 
  * @author Bart.Hanssens
  */
-public interface ProcedureProjection {
-	@XBRead("/fedict.edrl.domain.Procedure/contentId")
-	public String getID();
-
-	@XBRead("/fedict.edrl.domain.Procedure/language")
-	public String getLanguage();
-
-	@XBRead("/fedict.edrl.domain.Procedure/lifecycle")
-	public String getLifecycle();
-
-	@XBRead("/fedict.edrl.domain.Procedure/title")
-	public String getTitle();
+public interface LinkProjection {
+	@XBRead("url")
+	public String getURL();
 	
-	@XBRead("/fedict.edrl.domain.Procedure/shortDescription")
-	public String getDesc();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/applicationSummary")
-	public String getSummary();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/applicableTo")
-	public String getApplies();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/applicableExceptions")
-	public String getAppliesExcept();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/formalities")
-	public String getFormalities();
-
-	@XBRead("/fedict.edrl.domain.Procedure/forms/fedict.edrl.domain.Link")
-	public List<LinkProjection> getForms();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/legalBases/fedict.edrl.domain.Link")
-	public List<LinkProjection> getLegal();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/indicators")
-	public IndicatorProjection getIndicators();
-
-	@XBRead("/fedict.edrl.domain.Procedure/responsibleAdministration/municipalities/fedict.edrl.domain.Municipality")	
-	public List<MunicipalityProjection> getCities();
-	
-	@XBRead("/fedict.edrl.domain.Procedure/price")
-	public String getPrice();
+	@XBRead("description")
+	public String getDescription();
 }

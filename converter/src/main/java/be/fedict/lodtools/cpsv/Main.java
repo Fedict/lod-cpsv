@@ -92,7 +92,10 @@ public class Main {
 		String id = Consts.FREE.contains(cost) ? "zero" : DigestUtils.sha1Hex(cost);
 		return F.createIRI(DOM_BELGIF + "/cost/" + id);
 	}
-	
+	/*
+	private static IRI legalBase(String id) {
+		
+	}*/
 	/**
 	 * Create language IRI identifier
 	 * 
