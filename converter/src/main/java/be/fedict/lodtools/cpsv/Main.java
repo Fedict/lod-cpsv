@@ -35,7 +35,9 @@ import java.security.MessageDigest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import org.eclipse.rdf4j.model.IRI;
@@ -70,6 +72,8 @@ public class Main {
 	private final static String DOM_BELGIF = "http://pubserv.belgif.be";	
     private static String domain = null;
     
+	private static Set<String> Sectors = new HashSet();    
+	private static Set<String> Activities = new HashSet();
 	
 	/**
 	 * Create IRI identifier for service
@@ -113,7 +117,17 @@ public class Main {
 		return F.createIRI(Consts.PREFIX_LANG + term);
 	}
 	
-	
+	private static IRI lifecycleID(String code) {
+		String term = "";
+		switch(code) {
+			case "START":
+			case "ACTIVE":
+			case "STOP":
+				term = code;
+				break;
+		}
+		return F.createIRI(Consts.PREFIX_LIFE + term);
+	}
 	/**
 	 * Process the list of cities and match to a complete region(s) in Belgium.
 	 * 
@@ -190,6 +204,16 @@ public class Main {
 		m.add(id, Consts.CLASS_HAS_COST, cost);
 		m.add(cost, RDFS.CLASS, Consts.CLASS_COST);
 		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
+		
+		String event = p.getLifecycle();
+		IRI cycle = lifecycleID(event);
+		m.add(id, Consts.GROUPED_BY, cycle);
+		
+		//System.err.println(p.getFormalities());
+		
+		p.getSectors().forEach(s -> Sectors.add(s.getCode()));
+		p.getActivities().forEach(a -> Activities.add(a.getCode() + " " + (a.getSector())));
+	
 	}
 	
     /**
@@ -229,6 +253,12 @@ public class Main {
 					processFile(file, m);
 				}
             }
+			
+			System.err.println("** SECTORS");
+			Sectors.stream().sorted().forEach(s -> System.err.println(s));
+			System.err.println("** ACTIVITIES ");
+			Activities.stream().sorted().forEach(a -> System.err.println(a));
+			
 			Rio.write(m, w, RDFFormat.NTRIPLES);
         }
 		LOG.info("--- END ---");

@@ -76,4 +76,10 @@ public interface ProcedureProjection {
 	
 	@XBRead("/fedict.edrl.domain.Procedure/price")
 	public String getPrice();
+	
+	@XBRead("/fedict.edrl.domain.Procedure/commonSectors/fedict.edrl.domain.Sector")
+	public List<SectorProjection> getSectors();
+	
+	@XBRead("/fedict.edrl.domain.Procedure/commonActivities/fedict.edrl.domain.Activity")
+	public List<ActivityProjection> getActivities();
 }
