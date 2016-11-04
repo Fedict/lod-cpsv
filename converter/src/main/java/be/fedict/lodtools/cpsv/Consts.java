@@ -57,7 +57,8 @@ public class Consts {
 	public final static String PREFIX_CPSV = "http://purl.org/vocab/cpsv#";
 	public final static IRI CLASS_CPSV = F.createIRI(PREFIX_CPSV + "PublicService");
 	public final static IRI CLASS_COST = F.createIRI(PREFIX_CPSV + "Cost");
-	public final static IRI CLASS_HAS_COST = F.createIRI(PREFIX_CPSV + "hasCost") ;
+	public final static IRI HAS_COST = F.createIRI(PREFIX_CPSV + "hasCost") ;
+	public final static IRI HAS_SECTOR = F.createIRI(PREFIX_CPSV + "sector") ;
 	public final static IRI GROUPED_BY = F.createIRI(PREFIX_CPSV + "isGroupedBy");
 	
 	public final static List<String> FREE = Arrays.asList(

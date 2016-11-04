@@ -32,28 +32,14 @@ import org.xmlbeam.annotation.XBRead;
  * 
  * @author Bart.Hanssens
  */
-public interface AddressProjection {
-	@XBRead("nisCode")
-	public String getNisCode();
+public interface AdministrationProjection {
+	@XBRead("service/internalCode")
+	public String getCode();
 	
-	@XBRead("postcode")
-	public String getZipCode();
-
-	@XBRead("building")
-	public String getBuilding();
-
-	@XBRead("street")
-	public String getStreet();
+	@XBRead("address")
+	public AddressProjection getAddress();
 	
-	@XBRead("number")
-	public String getNumber();
+	@XBRead("type")
+	public String getType();
 	
-	@XBRead("box")
-	public String getBox();
-
-	@XBRead("email")
-	public String getEmail();
-	
-	@XBRead("website")
-	public String getWebsite();
 }

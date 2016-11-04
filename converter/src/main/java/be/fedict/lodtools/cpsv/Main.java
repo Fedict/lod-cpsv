@@ -25,6 +25,8 @@
  */
 package be.fedict.lodtools.cpsv;
 
+import be.fedict.lodtools.cpsv.proj.ActivityProjection;
+import be.fedict.lodtools.cpsv.proj.AddressProjection;
 import be.fedict.lodtools.cpsv.proj.ProcedureProjection;
 import be.fedict.lodtools.cpsv.proj.MunicipalityProjection;
 import java.io.BufferedWriter;
@@ -71,9 +73,8 @@ public class Main {
     
 	private final static String DOM_BELGIF = "http://pubserv.belgif.be";	
     private static String domain = null;
-    
-	private static Set<String> Sectors = new HashSet();    
-	private static Set<String> Activities = new HashSet();
+     
+	private static Set<IRI> Activities = new HashSet();
 	
 	/**
 	 * Create IRI identifier for service
@@ -83,6 +84,18 @@ public class Main {
 	 */
 	private static IRI serviceID(String id) {
 		return F.createIRI(DOM_BELGIF + "/service/" + id);
+	}
+	
+	/**
+	 * Create IRI identifier for activity
+	 * 
+	 * @param sector sector code
+	 * @param activity activity code
+	 * @return IRI
+	 */
+	private static IRI sectorID(String sector, String activity) {
+		return F.createIRI(DOM_BELGIF + "/sector/" 
+				+ sector.substring(0, 2) + "/" + activity.substring(0, 2));
 	}
 	
 	/**
@@ -201,7 +214,7 @@ public class Main {
 		
 		String price = p.getPrice();
 		IRI cost = costID(price);
-		m.add(id, Consts.CLASS_HAS_COST, cost);
+		m.add(id, Consts.HAS_COST, cost);
 		m.add(cost, RDFS.CLASS, Consts.CLASS_COST);
 		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
 		
@@ -211,9 +224,16 @@ public class Main {
 		
 		//System.err.println(p.getFormalities());
 		
-		p.getSectors().forEach(s -> Sectors.add(s.getCode()));
-		p.getActivities().forEach(a -> Activities.add(a.getCode() + " " + (a.getSector())));
+		for (ActivityProjection a: p.getActivities()) {
+			IRI activity = sectorID(a.getSector(), a.getCode());
+			Activities.add(activity);
+			m.add(id, Consts.HAS_SECTOR, activity);
+		}
 	
+		AddressProjection a = p.getAdministration().getAddress();
+		if (a != null) {
+			System.err.println(p.getAdministration().getAddress().getStreet());
+		}
 	}
 	
     /**
@@ -254,10 +274,8 @@ public class Main {
 				}
             }
 			
-			System.err.println("** SECTORS");
-			Sectors.stream().sorted().forEach(s -> System.err.println(s));
 			System.err.println("** ACTIVITIES ");
-			Activities.stream().sorted().forEach(a -> System.err.println(a));
+			Activities.stream().sorted().forEach(a -> System.err.println(a.toString()));
 			
 			Rio.write(m, w, RDFFormat.NTRIPLES);
         }
