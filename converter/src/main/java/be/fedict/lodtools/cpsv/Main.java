@@ -223,7 +223,7 @@ public class Main {
 		m.add(id, Consts.GROUPED_BY, cycle);
 		
 		//System.err.println(p.getFormalities());
-		
+	
 		for (ActivityProjection a: p.getActivities()) {
 			IRI activity = sectorID(a.getSector(), a.getCode());
 			Activities.add(activity);

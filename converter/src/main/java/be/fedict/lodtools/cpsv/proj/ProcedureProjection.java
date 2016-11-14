@@ -59,6 +59,10 @@ public interface ProcedureProjection {
 	@XBRead("/fedict.edrl.domain.Procedure/applicableExceptions")
 	public String getAppliesExcept();
 	
+	@XBRead("/fedict.edrl.domain.Procedure/conditions")
+	public String getCondition();
+	
+	
 	@XBRead("/fedict.edrl.domain.Procedure/formalities")
 	public String getFormalities();
 
@@ -76,6 +80,9 @@ public interface ProcedureProjection {
 	
 	@XBRead("/fedict.edrl.domain.Procedure/responsibleAdministration")	
 	public AdministrationProjection getAdministration();
+
+	@XBRead("/fedict.edrl.domain.Procedure/frequency")
+	public String getFrequency();
 	
 	@XBRead("/fedict.edrl.domain.Procedure/price")
 	public String getPrice();

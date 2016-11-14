@@ -38,4 +38,7 @@ public interface LinkProjection {
 	
 	@XBRead("description")
 	public String getDescription();
+
+	@XBRead("utility")
+	public String getUtility();
 }
