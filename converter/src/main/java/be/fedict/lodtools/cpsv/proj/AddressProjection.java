@@ -33,6 +33,12 @@ import org.xmlbeam.annotation.XBRead;
  * @author Bart.Hanssens
  */
 public interface AddressProjection {
+	@XBRead("addressId/mainCode")
+	public String getMainCode();
+
+	@XBRead("addressId/subCode")
+	public String getSubCode();
+	
 	@XBRead("nisCode")
 	public String getNisCode();
 	

@@ -32,18 +32,17 @@ import be.fedict.lodtools.cpsv.proj.LinkProjection;
 import be.fedict.lodtools.cpsv.proj.ProcedureProjection;
 import be.fedict.lodtools.cpsv.proj.MunicipalityProjection;
 import be.fedict.lodtools.cpsv.proj.ResponsibleProjection;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
-import java.math.BigDecimal;
-import java.security.MessageDigest;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.apache.commons.codec.digest.DigestUtils;
 
 import org.eclipse.rdf4j.model.IRI;
@@ -55,7 +54,6 @@ import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.ORG;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
-
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
@@ -91,29 +89,19 @@ public class Main {
 			return F.createIRI(ORG_BELGIF + id);
 		}
 		if (code != null && !code.isEmpty()) {
-			return F.createIRI(DOM_BELGIF + "/org" + code);
+			return F.createIRI(DOM_BELGIF + "/org" + code + "#id");
 		}
 		return null;
 	}
-	
+
 	/**
-	 * Create IRI identifier for framework
+	 * Create IRI identifier
 	 * 
 	 * @param id short code
 	 * @return IRI
 	 */
-	private static IRI frameworkID(String id) {
-		return F.createIRI(DOM_BELGIF + "/framework/" + id);
-	}
-	
-	/**
-	 * Create IRI identifier for service
-	 * 
-	 * @param id short code
-	 * @return IRI
-	 */
-	private static IRI serviceID(String id) {
-		return F.createIRI(DOM_BELGIF + "/service/" + id);
+	private static IRI genericID(String type, String id) {
+		return F.createIRI(DOM_BELGIF + "/" + type + "/" + id + "#id");
 	}
 	
 	/**
@@ -137,7 +125,7 @@ public class Main {
 	private static IRI costID(String cost) {
 		// Try to map different wordings of "free" to the same IRI
 		String id = Consts.FREE.contains(cost) ? "zero" : DigestUtils.sha1Hex(cost);
-		return F.createIRI(DOM_BELGIF + "/cost/" + id);
+		return genericID("cost", id);
 	}
 	/*
 	private static IRI legalBase(String id) {
@@ -214,6 +202,107 @@ public class Main {
 		return regions;
 	}
 	
+
+	/**
+	 * Add price, if any
+	 * 
+	 * @param m
+	 * @param id
+	 * @param price
+	 * @param lang 
+	 */
+	private static void addPrice(Model m, IRI id, String price, String lang) {
+		if (price == null || price.isEmpty()) {
+			return;
+		}
+		IRI cost = costID(price);
+		m.add(id, Consts.HAS_COST, cost);
+		m.add(cost, RDFS.CLASS, Consts.CLASS_COST);
+		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
+	}
+
+	/**
+	 * Add activities
+	 * 
+	 * @param m
+	 * @param id
+	 * @param as 
+	 */
+	private static void addActivities(Model m, IRI id, List<ActivityProjection> as) {
+		for (ActivityProjection a: as) {
+			IRI activity = sectorID(a.getSector(), a.getCode());
+			Activities.add(activity);
+			m.add(id, Consts.HAS_SECTOR, activity);
+		}
+	}
+	
+	/**
+	 * Add a link
+	 * 
+	 * @param m
+	 * @param id
+	 * @param l
+	 * @param lang 
+	 */
+	private static void addLink(Model m, IRI id, LinkProjection l, String lang) {
+		String desc = l.getDescription();
+		String url = l.getURL();
+		
+		if (desc != null && !desc.isEmpty()) {
+			desc = desc.replaceAll("<[^>]*>", "").trim();
+			m.add(id, DCTERMS.TITLE, F.createLiteral(desc, lang));
+		}
+		if (url != null && !url.isEmpty()) {
+			m.add(id, DCTERMS.REFERENCES, F.createIRI(url));
+		}
+	}
+	
+	/**
+	 * Add framework
+	 * 
+	 * @param m
+	 * @param id
+	 * @param ls
+	 * @param lang
+	 * @param code 
+	 */
+	private static void addFramework(Model m, IRI id, List<LinkProjection> ls, String lang, String code) {
+		// Legal Framework
+		int cnt = 1;
+		for (LinkProjection l: ls) {
+			IRI fid = genericID("framework", code + "/" + cnt);
+			
+			m.add(id, Consts.HAS_FRAMEWORK, fid);
+			m.add(fid, RDF.TYPE, Consts.CLASS_FRAMEWORK);
+			addLink(m, fid, l, lang);
+			
+			cnt++;
+		}
+	}
+	
+	/**
+	 * Add framework
+	 * 
+	 * @param m
+	 * @param id
+	 * @param ls
+	 * @param lang
+	 * @param code 
+	 */
+	private static void addInput(Model m, IRI id, List<LinkProjection> ls, String lang, String code) {
+		// Legal Framework
+		int cnt = 1;
+		for (LinkProjection l: ls) {
+			IRI fid = genericID("input", code + "/" + cnt);
+			
+			m.add(id, Consts.HAS_INPUT, fid);
+			m.add(fid, RDF.TYPE, Consts.CLASS_INPUT);
+			addLink(m, fid, l, lang);
+			
+			cnt++;
+		}
+	}
+	
 	/**
 	 * Process one of the EDRL / XML files, adding info to the RDF model.
 	 * 
@@ -229,7 +318,7 @@ public class Main {
 			LOG.warn("Not a procedure");
 			return;
 		}
-		IRI id = serviceID(p.getID());
+		IRI id = genericID("service", p.getID());
 		String lang = p.getLanguage().toLowerCase();
 		
 		m.add(id, RDFS.CLASS, Consts.CLASS_CPSV);
@@ -246,12 +335,8 @@ public class Main {
 		IRI cycle = lifecycleID(event);
 		m.add(id, Consts.GROUPED_BY, cycle);
 		
-		String price = p.getPrice();
-		IRI cost = costID(price);
-		m.add(id, Consts.HAS_COST, cost);
-		m.add(cost, RDFS.CLASS, Consts.CLASS_COST);
-		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
-		
+		addPrice(m, id, p.getPrice(), lang);
+
 		String freq = p.getFrequency();
 		if (freq != null && ! freq.trim().isEmpty()) {
 			m.add(id, DCTERMS.FREQUENCY, F.createLiteral(freq, lang));
@@ -259,41 +344,23 @@ public class Main {
 		
 		//System.err.println(p.getFormalities());
 	
-		
 		ResponsibleProjection r = p.getResponsible();
 		AdministrationProjection ra = r.getAdministration();
+		IRI aid = null;
 		if (ra != null) {
-			IRI aid = adminID(ra.getBCE(), ra.getCode());
-			System.err.println(ra.getName());
+			aid = adminID(ra.getBCE(), ra.getCode());
 			m.add(id, DCTERMS.PUBLISHER, aid);
 			m.add(aid, RDF.TYPE, ORG.ORGANIZATION);
 			m.add(aid, DCTERMS.TITLE, F.createLiteral(ra.getName(), lang));
 		}
 		
-		for (ActivityProjection a: p.getActivities()) {
-			IRI activity = sectorID(a.getSector(), a.getCode());
-			Activities.add(activity);
-			m.add(id, Consts.HAS_SECTOR, activity);
+		AddressProjection ad = r.getAddress();
+		if (ad != null) {
 		}
-	
-		// Legal Framework
-		int cnt = 1;
-		for (LinkProjection l: p.getLegal()) {
-			IRI fid = frameworkID(p.getID() + "/" + cnt);
-			String desc = l.getDescription().replaceAll("<div>", "").replaceAll("</div>", "");
-			String url = l.getURL();
-			
-			m.add(id, Consts.HAS_FRAMEWORK, fid);
-			m.add(fid, RDF.TYPE, Consts.CLASS_FRAMEWORK);
-			if (desc != null && ! desc.trim().isEmpty()) {
-				m.add(fid, DCTERMS.TITLE, F.createLiteral(desc, lang));
-			}
-			if (url != null && ! url.trim().isEmpty()) {
-				m.add(fid, DCTERMS.REFERENCES, F.createIRI(url));
-			}
-			cnt++;
-		}
-	
+
+		addActivities(m, id, p.getActivities());
+		addFramework(m, id, p.getLegal(), lang, p.getID());
+		addInput(m, id, p.getForms(), lang, p.getID());	
 	}
 	
     /**
