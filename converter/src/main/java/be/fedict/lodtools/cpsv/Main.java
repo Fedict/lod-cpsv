@@ -27,12 +27,16 @@ package be.fedict.lodtools.cpsv;
 
 import be.fedict.lodtools.cpsv.proj.ActivityProjection;
 import be.fedict.lodtools.cpsv.proj.AddressProjection;
+import be.fedict.lodtools.cpsv.proj.AdministrationProjection;
+import be.fedict.lodtools.cpsv.proj.LinkProjection;
 import be.fedict.lodtools.cpsv.proj.ProcedureProjection;
 import be.fedict.lodtools.cpsv.proj.MunicipalityProjection;
+import be.fedict.lodtools.cpsv.proj.ResponsibleProjection;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
+import java.math.BigDecimal;
 import java.security.MessageDigest;
 
 import java.text.SimpleDateFormat;
@@ -48,6 +52,8 @@ import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
+import org.eclipse.rdf4j.model.vocabulary.ORG;
+import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -71,10 +77,34 @@ public class Main {
     private final static ValueFactory F = SimpleValueFactory.getInstance();
 	private final static SimpleDateFormat SDF = new SimpleDateFormat("dd-MM-yyyy");
     
-	private final static String DOM_BELGIF = "http://pubserv.belgif.be";	
+	private final static String DOM_BELGIF = "http://pubserv.belgif.be";
+	private final static String ORG_BELGIF = "http://org.belgif.be/cbe/org/";
+	
     private static String domain = null;
      
 	private static Set<IRI> Activities = new HashSet();
+	
+	
+	private static IRI adminID(String bce, String code) {
+		if (bce != null && !bce.isEmpty()) {
+			String id = bce.substring(0, 4) + "_" + bce.substring(4, 7) + "_" + bce.substring(7) + "#id";
+			return F.createIRI(ORG_BELGIF + id);
+		}
+		if (code != null && !code.isEmpty()) {
+			return F.createIRI(DOM_BELGIF + "/org" + code);
+		}
+		return null;
+	}
+	
+	/**
+	 * Create IRI identifier for framework
+	 * 
+	 * @param id short code
+	 * @return IRI
+	 */
+	private static IRI frameworkID(String id) {
+		return F.createIRI(DOM_BELGIF + "/framework/" + id);
+	}
 	
 	/**
 	 * Create IRI identifier for service
@@ -212,28 +242,58 @@ public class Main {
 			m.add(id, DCTERMS.SPATIAL, region);
 		}
 		
+		String event = p.getLifecycle();
+		IRI cycle = lifecycleID(event);
+		m.add(id, Consts.GROUPED_BY, cycle);
+		
 		String price = p.getPrice();
 		IRI cost = costID(price);
 		m.add(id, Consts.HAS_COST, cost);
 		m.add(cost, RDFS.CLASS, Consts.CLASS_COST);
 		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
 		
-		String event = p.getLifecycle();
-		IRI cycle = lifecycleID(event);
-		m.add(id, Consts.GROUPED_BY, cycle);
+		String freq = p.getFrequency();
+		if (freq != null && ! freq.trim().isEmpty()) {
+			m.add(id, DCTERMS.FREQUENCY, F.createLiteral(freq, lang));
+		}
 		
 		//System.err.println(p.getFormalities());
 	
+		
+		ResponsibleProjection r = p.getResponsible();
+		AdministrationProjection ra = r.getAdministration();
+		if (ra != null) {
+			IRI aid = adminID(ra.getBCE(), ra.getCode());
+			System.err.println(ra.getName());
+			m.add(id, DCTERMS.PUBLISHER, aid);
+			m.add(aid, RDF.TYPE, ORG.ORGANIZATION);
+			m.add(aid, DCTERMS.TITLE, F.createLiteral(ra.getName(), lang));
+		}
+		
 		for (ActivityProjection a: p.getActivities()) {
 			IRI activity = sectorID(a.getSector(), a.getCode());
 			Activities.add(activity);
 			m.add(id, Consts.HAS_SECTOR, activity);
 		}
 	
-		AddressProjection a = p.getAdministration().getAddress();
-		if (a != null) {
-			System.err.println(p.getAdministration().getAddress().getStreet());
+		// Legal Framework
+		int cnt = 1;
+		for (LinkProjection l: p.getLegal()) {
+			IRI fid = frameworkID(p.getID() + "/" + cnt);
+			String desc = l.getDescription().replaceAll("<div>", "").replaceAll("</div>", "");
+			String url = l.getURL();
+			
+			m.add(id, Consts.HAS_FRAMEWORK, fid);
+			m.add(fid, RDF.TYPE, Consts.CLASS_FRAMEWORK);
+			if (desc != null && ! desc.trim().isEmpty()) {
+				m.add(fid, DCTERMS.TITLE, F.createLiteral(desc, lang));
+			}
+			if (url != null && ! url.trim().isEmpty()) {
+				m.add(fid, DCTERMS.REFERENCES, F.createIRI(url));
+			}
+			cnt++;
 		}
+	
 	}
 	
     /**
@@ -275,7 +335,7 @@ public class Main {
             }
 			
 			System.err.println("** ACTIVITIES ");
-			Activities.stream().sorted().forEach(a -> System.err.println(a.toString()));
+			Activities.stream().forEach(a -> System.err.println(a.toString()));
 			
 			Rio.write(m, w, RDFFormat.NTRIPLES);
         }

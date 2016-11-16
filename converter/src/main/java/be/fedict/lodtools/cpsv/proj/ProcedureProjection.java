@@ -62,7 +62,6 @@ public interface ProcedureProjection {
 	@XBRead("/fedict.edrl.domain.Procedure/conditions")
 	public String getCondition();
 	
-	
 	@XBRead("/fedict.edrl.domain.Procedure/formalities")
 	public String getFormalities();
 
@@ -79,7 +78,7 @@ public interface ProcedureProjection {
 	public List<MunicipalityProjection> getCities();
 	
 	@XBRead("/fedict.edrl.domain.Procedure/responsibleAdministration")	
-	public AdministrationProjection getAdministration();
+	public ResponsibleProjection getResponsible();
 
 	@XBRead("/fedict.edrl.domain.Procedure/frequency")
 	public String getFrequency();

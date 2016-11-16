@@ -32,19 +32,10 @@ import org.xmlbeam.annotation.XBRead;
  * 
  * @author Bart.Hanssens
  */
-public interface AdministrationProjection {
-	@XBRead("code")
-	public String getCode();
+public interface ResponsibleProjection {
+	@XBRead("administration")
+	public AdministrationProjection getAdministration();;
 	
-	@XBRead("name")
-	public String getName();
-	
-	@XBRead("companyNumber")
-	public String getBCE();
-	
-	@XBRead("politicalLevelCode")
-	public String getLevel();
-	
-	@XBRead("type")
-	public String getType();
+	@XBRead("address")
+	public AddressProjection getAddress();
 }

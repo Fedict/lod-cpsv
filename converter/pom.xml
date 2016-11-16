@@ -15,7 +15,7 @@
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-rio-api</artifactId>
-            <version>2.0.1</version>
+            <version>2.1</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>org.eclipse.rdf4j</groupId>
             <artifactId>rdf4j-rio-ntriples</artifactId>
-            <version>2.0.1</version>
+            <version>2.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
