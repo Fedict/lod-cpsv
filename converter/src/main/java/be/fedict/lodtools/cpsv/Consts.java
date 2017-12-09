@@ -44,7 +44,7 @@ public class Consts {
 //	public final static String PREFIX_DDEIO = "http://dd.eionet.europa.eu/vocabulary/lau2/be/";
 
 	
-	public final static String PREFIX_LIFE = "http://org.belgif.be/vocab/lifecycle/";
+	public final static String PREFIX_LIFE = "http://vocab.belgif.be/lifecycle/";
 	
 	// administrations
 	public final static String PREFIX_ATU = "http://publications.europa.eu/resource/authority/atu/";

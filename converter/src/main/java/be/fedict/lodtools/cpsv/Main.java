@@ -157,7 +157,7 @@ public class Main {
 				term = code;
 				break;
 		}
-		return F.createIRI(Consts.PREFIX_LIFE + term);
+		return F.createIRI(Consts.PREFIX_LIFE + term + "#id");
 	}
 	/**
 	 * Process the list of cities and match to a complete region(s) in Belgium.
