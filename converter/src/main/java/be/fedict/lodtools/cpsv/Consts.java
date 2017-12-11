@@ -38,34 +38,13 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  * @author Bart Hanssens <bart.hanssens@fedict.be>
  */
 public class Consts {
-    private final static ValueFactory F = SimpleValueFactory.getInstance();
-    
+	public final static String DOM_BELGIF = "http://vocab.belgif.be/auth";
+	public final static String ORG_BELGIF = "http://org.belgif.be/cbe/org/";
+	
 	public final static String PREFIX_LANG = "http://publications.europa.eu/resource/authority/language/";
 //	public final static String PREFIX_DDEIO = "http://dd.eionet.europa.eu/vocabulary/lau2/be/";
-
 	
 	public final static String PREFIX_LIFE = "http://vocab.belgif.be/lifecycle/";
-	
-	// administrations
-	public final static String PREFIX_ATU = "http://publications.europa.eu/resource/authority/atu/";
-	public final static IRI ID_BXL = F.createIRI(PREFIX_ATU + "BEL_RG_BRU");
-	public final static IRI ID_VLA = F.createIRI(PREFIX_ATU + "BEL_RG_VLS");
-	public final static IRI ID_WAL = F.createIRI(PREFIX_ATU + "BEL_RG_WAL");
-	public final static IRI ID_GER = F.createIRI(PREFIX_ATU + "BEL_CGG_DEU");
-	public final static IRI ID_WAL_EX_GER = F.createIRI(PREFIX_ATU + "BEL_RG_WAL_MINUS_CGG_DEU");
-	
-	public final static String PREFIX_CPSV = "http://purl.org/vocab/cpsv#";
-	
-	public final static IRI CLASS_CPSV = F.createIRI(PREFIX_CPSV + "PublicService");
-	public final static IRI CLASS_COST = F.createIRI(PREFIX_CPSV + "Cost");
-	public final static IRI CLASS_FRAMEWORK = F.createIRI(PREFIX_CPSV + "Framework");
-	public final static IRI CLASS_INPUT = F.createIRI(PREFIX_CPSV + "Input");
-	
-	public final static IRI HAS_COST = F.createIRI(PREFIX_CPSV + "hasCost") ;
-	public final static IRI HAS_FRAMEWORK = F.createIRI(PREFIX_CPSV + "hasFramework") ;
-	public final static IRI HAS_INPUT = F.createIRI(PREFIX_CPSV + "hasInput") ;
-	public final static IRI HAS_SECTOR = F.createIRI(PREFIX_CPSV + "sector") ;
-	public final static IRI GROUPED_BY = F.createIRI(PREFIX_CPSV + "isGroupedBy");
 	
 	public final static List<String> FREE = Arrays.asList(
 											"<div>0 euro</div>",

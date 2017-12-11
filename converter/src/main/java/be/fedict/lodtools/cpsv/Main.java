@@ -32,6 +32,9 @@ import be.fedict.lodtools.cpsv.proj.LinkProjection;
 import be.fedict.lodtools.cpsv.proj.ProcedureProjection;
 import be.fedict.lodtools.cpsv.proj.MunicipalityProjection;
 import be.fedict.lodtools.cpsv.proj.ResponsibleProjection;
+import be.fedict.lodtools.cpsv.vocab.ATU;
+import be.fedict.lodtools.cpsv.vocab.CPSV;
+import be.fedict.lodtools.cpsv.vocab.CPSVBE;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -74,22 +77,20 @@ public class Main {
 	
     private final static ValueFactory F = SimpleValueFactory.getInstance();
 	private final static SimpleDateFormat SDF = new SimpleDateFormat("dd-MM-yyyy");
-    
-	private final static String DOM_BELGIF = "http://pubserv.belgif.be";
-	private final static String ORG_BELGIF = "http://org.belgif.be/cbe/org/";
+   
 	
     private static String domain = null;
      
-	private static Set<IRI> Activities = new HashSet();
+	private final static Set<IRI> Activities = new HashSet();
 	
 	
 	private static IRI adminID(String bce, String code) {
 		if (bce != null && !bce.isEmpty()) {
 			String id = bce.substring(0, 4) + "_" + bce.substring(4, 7) + "_" + bce.substring(7) + "#id";
-			return F.createIRI(ORG_BELGIF + id);
+			return F.createIRI(Consts.ORG_BELGIF + id);
 		}
 		if (code != null && !code.isEmpty()) {
-			return F.createIRI(DOM_BELGIF + "/org" + code + "#id");
+			return F.createIRI(Consts.DOM_BELGIF + "/org" + code + "#id");
 		}
 		return null;
 	}
@@ -101,7 +102,7 @@ public class Main {
 	 * @return IRI
 	 */
 	private static IRI genericID(String type, String id) {
-		return F.createIRI(DOM_BELGIF + "/" + type + "/" + id + "#id");
+		return F.createIRI(Consts.DOM_BELGIF + "/" + type + "/" + id + "#id");
 	}
 	
 	/**
@@ -112,8 +113,8 @@ public class Main {
 	 * @return IRI
 	 */
 	private static IRI sectorID(String sector, String activity) {
-		return F.createIRI(DOM_BELGIF + "/sector/" 
-				+ sector.substring(0, 2) + "/" + activity.substring(0, 2));
+		return F.createIRI(Consts.DOM_BELGIF + "/sector/" 
+				+ sector.substring(0, 2) + "/" + activity.substring(0, 2) + "#id");
 	}
 	
 	/**
@@ -159,6 +160,7 @@ public class Main {
 		}
 		return F.createIRI(Consts.PREFIX_LIFE + term + "#id");
 	}
+	
 	/**
 	 * Process the list of cities and match to a complete region(s) in Belgium.
 	 * 
@@ -169,32 +171,32 @@ public class Main {
 		// cheating: just count them
 		switch (p.size()) {
 			case 9:
-				regions.add(Consts.ID_GER);
+				regions.add(ATU.ID_GER);
 				break;
 			case 19:
-				regions.add(Consts.ID_BXL);
+				regions.add(ATU.ID_BXL);
 				break;
 			case 253:
-				regions.add(Consts.ID_WAL_EX_GER);
+				regions.add(ATU.ID_WAL_EX_GER);
 				break;
 			case 262:
-				regions.add(Consts.ID_WAL);
+				regions.add(ATU.ID_WAL);
 				break;
 			case 281:
-				regions.add(Consts.ID_BXL);
-				regions.add(Consts.ID_WAL);
+				regions.add(ATU.ID_BXL);
+				regions.add(ATU.ID_WAL);
 				break;
 			case 308: 
-				regions.add(Consts.ID_VLA);
+				regions.add(ATU.ID_VLA);
 				break;
 			case 327:
-				regions.add(Consts.ID_BXL);
-				regions.add(Consts.ID_VLA);
+				regions.add(ATU.ID_BXL);
+				regions.add(ATU.ID_VLA);
 				break;
 			case 589: 
-				regions.add(Consts.ID_BXL);
-				regions.add(Consts.ID_VLA);
-				regions.add(Consts.ID_WAL);
+				regions.add(ATU.ID_BXL);
+				regions.add(ATU.ID_VLA);
+				regions.add(ATU.ID_WAL);
 				break;
 			default:
 				LOG.error("Not found for {}", p.size());
@@ -216,8 +218,8 @@ public class Main {
 			return;
 		}
 		IRI cost = costID(price);
-		m.add(id, Consts.HAS_COST, cost);
-		m.add(cost, RDFS.CLASS, Consts.CLASS_COST);
+		m.add(id, CPSV.HAS_COST, cost);
+		m.add(cost, RDFS.CLASS, CPSV.CLASS_COST);
 		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
 	}
 
@@ -232,7 +234,7 @@ public class Main {
 		for (ActivityProjection a: as) {
 			IRI activity = sectorID(a.getSector(), a.getCode());
 			Activities.add(activity);
-			m.add(id, Consts.HAS_SECTOR, activity);
+			m.add(id, CPSV.HAS_SECTOR, activity);
 		}
 	}
 	
@@ -266,14 +268,15 @@ public class Main {
 	 * @param lang
 	 * @param code 
 	 */
-	private static void addFramework(Model m, IRI id, List<LinkProjection> ls, String lang, String code) {
+	private static void addFramework(Model m, IRI id, List<LinkProjection> ls, 
+													String lang, String code) {
 		// Legal Framework
 		int cnt = 1;
 		for (LinkProjection l: ls) {
 			IRI fid = genericID("framework", code + "/" + cnt);
 			
-			m.add(id, Consts.HAS_FRAMEWORK, fid);
-			m.add(fid, RDF.TYPE, Consts.CLASS_FRAMEWORK);
+			m.add(id, CPSV.HAS_FRAMEWORK, fid);
+			m.add(fid, RDF.TYPE, CPSV.CLASS_FRAMEWORK);
 			addLink(m, fid, l, lang);
 			
 			cnt++;
@@ -289,14 +292,15 @@ public class Main {
 	 * @param lang
 	 * @param code 
 	 */
-	private static void addInput(Model m, IRI id, List<LinkProjection> ls, String lang, String code) {
+	private static void addInput(Model m, IRI id, List<LinkProjection> ls, 
+												String lang, String code) {
 		// Legal Framework
 		int cnt = 1;
 		for (LinkProjection l: ls) {
 			IRI fid = genericID("input", code + "/" + cnt);
 			
-			m.add(id, Consts.HAS_INPUT, fid);
-			m.add(fid, RDF.TYPE, Consts.CLASS_INPUT);
+			m.add(id, CPSV.HAS_INPUT, fid);
+			m.add(fid, RDF.TYPE, CPSV.CLASS_INPUT);
 			addLink(m, fid, l, lang);
 			
 			cnt++;
@@ -321,10 +325,11 @@ public class Main {
 		IRI id = genericID("service", p.getID());
 		String lang = p.getLanguage().toLowerCase();
 		
-		m.add(id, RDFS.CLASS, Consts.CLASS_CPSV);
+		m.add(id, RDFS.CLASS, CPSV.CLASS_CPSV);
 		m.add(id, DCTERMS.TITLE, F.createLiteral(p.getTitle(), lang));
 		m.add(id, DCTERMS.DESCRIPTION, F.createLiteral(p.getDesc(), lang));
 		m.add(id, DCTERMS.ABSTRACT, F.createLiteral(p.getApplies(), lang));
+		m.add(id, CPSVBE.APPLIES_EXCEPT, F.createLiteral(p.getAppliesExcept(), lang));
 		m.add(id, DCTERMS.LANGUAGE, createLangID(lang));
 
 		for (IRI region: regionalize(p.getCities())) {
@@ -333,7 +338,7 @@ public class Main {
 		
 		String event = p.getLifecycle();
 		IRI cycle = lifecycleID(event);
-		m.add(id, Consts.GROUPED_BY, cycle);
+		m.add(id, CPSV.GROUPED_BY, cycle);
 		
 		addPrice(m, id, p.getPrice(), lang);
 
@@ -381,7 +386,7 @@ public class Main {
         if (args.length > 2 && args[2].startsWith("http")) {
             domain = args[2];
         } else {
-            domain = DOM_BELGIF;
+            domain = "http://pubserv.belgif.be";
         }
 		
         LOG.info("--- START ---");
