@@ -328,7 +328,8 @@ public class Main {
 		m.add(id, RDFS.CLASS, CPSV.CLASS_CPSV);
 		m.add(id, DCTERMS.TITLE, F.createLiteral(p.getTitle(), lang));
 		m.add(id, DCTERMS.DESCRIPTION, F.createLiteral(p.getDesc(), lang));
-		m.add(id, DCTERMS.ABSTRACT, F.createLiteral(p.getApplies(), lang));
+		m.add(id, DCTERMS.ABSTRACT, F.createLiteral(p.getSummary(), lang));
+		m.add(id, CPSVBE.APPLIES, F.createLiteral(p.getApplies(), lang));
 		m.add(id, CPSVBE.APPLIES_EXCEPT, F.createLiteral(p.getAppliesExcept(), lang));
 		m.add(id, DCTERMS.LANGUAGE, createLangID(lang));
 

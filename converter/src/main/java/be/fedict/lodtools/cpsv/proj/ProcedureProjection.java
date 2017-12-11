@@ -59,6 +59,9 @@ public interface ProcedureProjection {
 	@XBRead("/fedict.edrl.domain.Procedure/applicableExceptions")
 	public String getAppliesExcept();
 	
+	@XBRead("/fedict.edrl.domain.Procedure/authorizationPeriod")
+	public String getAuthPeriod();
+	
 	@XBRead("/fedict.edrl.domain.Procedure/conditions")
 	public String getCondition();
 	

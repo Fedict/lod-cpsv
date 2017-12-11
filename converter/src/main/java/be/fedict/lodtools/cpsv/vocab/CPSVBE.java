@@ -38,6 +38,7 @@ public class CPSVBE {
 	private final static ValueFactory F = SimpleValueFactory.getInstance();
 	
 	public final static String PREFIX = "http://vocab.belgif.be/ns/cpsvbe#";
-	
+
+	public final static IRI APPLIES = F.createIRI(PREFIX + "applies") ;	
 	public final static IRI APPLIES_EXCEPT = F.createIRI(PREFIX + "appliesExcept") ;
 }
