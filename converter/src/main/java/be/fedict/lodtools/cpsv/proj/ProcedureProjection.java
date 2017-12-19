@@ -74,6 +74,9 @@ public interface ProcedureProjection {
 	@XBRead("/fedict.edrl.domain.Procedure/legalBases/fedict.edrl.domain.Link")
 	public List<LinkProjection> getLegal();
 	
+	@XBRead("/fedict.edrl.domain.Procedure/additionalInformation/fedict.edrl.domain.Link")
+	public List<LinkProjection> getAdditional();
+	
 	@XBRead("/fedict.edrl.domain.Procedure/indicators")
 	public IndicatorProjection getIndicators();
 

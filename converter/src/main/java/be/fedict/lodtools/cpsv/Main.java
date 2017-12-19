@@ -35,6 +35,8 @@ import be.fedict.lodtools.cpsv.proj.ResponsibleProjection;
 import be.fedict.lodtools.cpsv.vocab.ATU;
 import be.fedict.lodtools.cpsv.vocab.CPSV;
 import be.fedict.lodtools.cpsv.vocab.CPSVBE;
+import be.fedict.lodtools.cpsv.vocab.CV;
+import be.fedict.lodtools.cpsv.vocab.LOCN;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -76,9 +78,7 @@ public class Main {
 	private final static XBProjector proj = new XBProjector();
 	
     private final static ValueFactory F = SimpleValueFactory.getInstance();
-	private final static SimpleDateFormat SDF = new SimpleDateFormat("dd-MM-yyyy");
    
-	
     private static String domain = null;
      
 	private final static Set<IRI> Activities = new HashSet();
@@ -86,15 +86,22 @@ public class Main {
 	
 	private static IRI adminID(String bce, String code) {
 		if (bce != null && !bce.isEmpty()) {
-			String id = bce.substring(0, 4) + "_" + bce.substring(4, 7) + "_" + bce.substring(7) + "#id";
+			String id = bce.substring(0, 4) + "_" + bce.substring(4, 7) 
+											+ "_" + bce.substring(7) + "#id";
 			return F.createIRI(Consts.ORG_BELGIF + id);
 		}
 		if (code != null && !code.isEmpty()) {
-			return F.createIRI(Consts.DOM_BELGIF + "/org" + code + "#id");
+			return F.createIRI(Consts.PUBSERV_BELGIF + "org/" + 
+											code.replaceAll(" ", "") + "#id");
 		}
 		return null;
 	}
 
+	private static IRI addrID(String mainCode, String subCode) {
+		return F.createIRI(Consts.PUBSERV_BELGIF + "addr/" 
+				+ DigestUtils.sha1Hex(mainCode + subCode) + "#id");
+	}
+	
 	/**
 	 * Create IRI identifier
 	 * 
@@ -102,7 +109,7 @@ public class Main {
 	 * @return IRI
 	 */
 	private static IRI genericID(String type, String id) {
-		return F.createIRI(Consts.DOM_BELGIF + "/" + type + "/" + id + "#id");
+		return F.createIRI(Consts.PUBSERV_BELGIF + type + "/" + id + "#id");
 	}
 	
 	/**
@@ -113,8 +120,8 @@ public class Main {
 	 * @return IRI
 	 */
 	private static IRI sectorID(String sector, String activity) {
-		return F.createIRI(Consts.DOM_BELGIF + "/sector/" 
-				+ sector.substring(0, 2) + "/" + activity.substring(0, 2) + "#id");
+		return F.createIRI(Consts.PUBSERV_BELGIF + "sector/" 
+				+ sector.substring(0, 2) + "/" + activity.substring(0, 2).trim() + "#id");
 	}
 	
 	/**
@@ -218,7 +225,7 @@ public class Main {
 			return;
 		}
 		IRI cost = costID(price);
-		m.add(id, CPSV.HAS_COST, cost);
+		m.add(id, CV.HAS_COST, cost);
 		m.add(cost, RDFS.CLASS, CPSV.CLASS_COST);
 		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
 	}
@@ -349,19 +356,29 @@ public class Main {
 		}
 		
 		//System.err.println(p.getFormalities());
-	
 		ResponsibleProjection r = p.getResponsible();
 		AdministrationProjection ra = r.getAdministration();
 		IRI aid = null;
 		if (ra != null) {
 			aid = adminID(ra.getBCE(), ra.getCode());
 			m.add(id, DCTERMS.PUBLISHER, aid);
+			m.add(id, CV.HAS_COMPETENT_AUTH, aid);
+			m.add(aid, RDF.TYPE, CV.CLASS_PUB_ORG);
 			m.add(aid, RDF.TYPE, ORG.ORGANIZATION);
 			m.add(aid, DCTERMS.TITLE, F.createLiteral(ra.getName(), lang));
-		}
 		
-		AddressProjection ad = r.getAddress();
-		if (ad != null) {
+			AddressProjection ad = r.getAddress();
+			if (ad != null) {
+				IRI addrid = addrID(ad.getMainCode(), ad.getSubCode());
+				if (ad.getStreet() != null && !ad.getStreet().isEmpty()) {
+					m.add(aid, CV.HAS_ADDRESS, addrid);
+					m.add(addrid, RDF.TYPE, LOCN.CLASS_ADDRESS);
+					m.add(addrid, LOCN.THOROUGHFARE, F.createLiteral(ad.getStreet()));
+					m.add(addrid, LOCN.LOCATOR_DESIGNATOR, F.createLiteral(ad.getNumber()));
+					m.add(addrid, LOCN.POST_CODE, F.createLiteral(ad.getZipCode()));
+					m.add(addrid, LOCN.POST_NAME, F.createLiteral(ad.getCity()));
+				}
+			}
 		}
 
 		addActivities(m, id, p.getActivities());

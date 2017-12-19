@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Bart Hanssens <bart.hanssens@fedict.be>
+ * Copyright (c) 2017, Bart Hanssens <bart.hanssens@fedict.be>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,7 +8,7 @@
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
+ *   this list of conditions and the following validdatedisclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -23,55 +23,30 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fedict.lodtools.cpsv.proj;
+package be.fedict.lodtools.cpsv.vocab;
 
-import org.xmlbeam.annotation.XBRead;
+import static be.fedict.lodtools.cpsv.vocab.CPSV.PREFIX;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 /**
- * XMLBeam "projector" (parser) interface
+ * Core Vocabulary
  * 
  * @author Bart.Hanssens
  */
-public interface AddressProjection {
-	@XBRead("addressId/mainCode")
-	public String getMainCode();
+public class CV {
+	private final static ValueFactory F = SimpleValueFactory.getInstance();
+	
+	public final static String PREFIX = "http://data.europa.eu/m8g/";
 
-	@XBRead("addressId/subCode")
-	public String getSubCode();
+	public final static IRI CLASS_PARTICIPATION = F.createIRI(PREFIX + "Participation");	
+	public final static IRI CLASS_PUB_ORG = F.createIRI(PREFIX + "PublicOrganisation");	
 	
-	@XBRead("nisCode")
-	public String getNisCode();
+	public final static IRI HAS_COMPETENT_AUTH = F.createIRI(PREFIX + "hacCompetentAuthority");
+	public final static IRI HAS_ADDRESS = F.createIRI(PREFIX + "hasAddress");
+	public final static IRI HAS_CHANNEL = F.createIRI(PREFIX + "hasChannel") ;
+	public final static IRI HAS_COST = F.createIRI(PREFIX + "hasCost") ;
 	
-	@XBRead("postcode")
-	public String getZipCode();
-
-	@XBRead("municipality")
-	public String getCity();
-	
-	@XBRead("building")
-	public String getBuilding();
-
-	@XBRead("street")
-	public String getStreet();
-	
-	@XBRead("number")
-	public String getNumber();
-	
-	@XBRead("box")
-	public String getBox();
-
-	@XBRead("telephone")
-	public String getPhone();
-	
-	@XBRead("email")
-	public String getEmail();
-	
-	@XBRead("website")
-	public String getWebsite();
-	
-	@XBRead("contactCenterTelephone")
-	public String getContactPhone();
-	
-	@XBRead("contactCenter")
-	public String getContactSite();
+	public final static IRI PLAYS_ROLE = F.createIRI(PREFIX + "plays_role");
 }

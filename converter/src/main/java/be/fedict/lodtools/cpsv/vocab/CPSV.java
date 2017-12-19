@@ -39,12 +39,12 @@ public class CPSV {
 	
 	public final static String PREFIX = "http://purl.org/vocab/cpsv#";
 	
+
 	public final static IRI CLASS_CPSV = F.createIRI(PREFIX + "PublicService");
 	public final static IRI CLASS_COST = F.createIRI(PREFIX + "Cost");
 	public final static IRI CLASS_FRAMEWORK = F.createIRI(PREFIX + "Framework");
 	public final static IRI CLASS_INPUT = F.createIRI(PREFIX + "Input");
-	
-	public final static IRI HAS_COST = F.createIRI(PREFIX + "hasCost") ;
+
 	public final static IRI HAS_FRAMEWORK = F.createIRI(PREFIX + "hasFramework") ;
 	public final static IRI HAS_INPUT = F.createIRI(PREFIX + "hasInput") ;
 	public final static IRI HAS_SECTOR = F.createIRI(PREFIX + "sector") ;

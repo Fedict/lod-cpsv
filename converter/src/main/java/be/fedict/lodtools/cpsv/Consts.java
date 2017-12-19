@@ -38,13 +38,14 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  * @author Bart Hanssens <bart.hanssens@fedict.be>
  */
 public class Consts {
-	public final static String DOM_BELGIF = "http://vocab.belgif.be/auth";
+	public final static String PUBSERV_BELGIF = "http://pubserv.belgif.be/";
+	public final static String VOCAB_BELGIF = "http://vocab.belgif.be/auth/";
 	public final static String ORG_BELGIF = "http://org.belgif.be/cbe/org/";
 	
 	public final static String PREFIX_LANG = "http://publications.europa.eu/resource/authority/language/";
 //	public final static String PREFIX_DDEIO = "http://dd.eionet.europa.eu/vocabulary/lau2/be/";
 	
-	public final static String PREFIX_LIFE = "http://vocab.belgif.be/lifecycle/";
+	public final static String PREFIX_LIFE = VOCAB_BELGIF + "/lifecycle";
 	
 	public final static List<String> FREE = Arrays.asList(
 											"<div>0 euro</div>",

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, Bart Hanssens <bart.hanssens@fedict.be>
+ * Copyright (c) 2017, Bart Hanssens <bart.hanssens@fedict.be>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -8,7 +8,7 @@
  * * Redistributions of source code must retain the above copyright notice, this
  *   list of conditions and the following disclaimer.
  * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
+ *   this list of conditions and the following validdatedisclaimer in the documentation
  *   and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
@@ -23,55 +23,29 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package be.fedict.lodtools.cpsv.proj;
+package be.fedict.lodtools.cpsv.vocab;
 
-import org.xmlbeam.annotation.XBRead;
+import org.eclipse.rdf4j.model.IRI;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 
 /**
- * XMLBeam "projector" (parser) interface
+ * CPSV-AP 2.x
  * 
  * @author Bart.Hanssens
  */
-public interface AddressProjection {
-	@XBRead("addressId/mainCode")
-	public String getMainCode();
+public class LOCN {
+	private final static ValueFactory F = SimpleValueFactory.getInstance();
+	
+	public final static String PREFIX = "http://www.w3.org/ns/locn#";
+	
 
-	@XBRead("addressId/subCode")
-	public String getSubCode();
-	
-	@XBRead("nisCode")
-	public String getNisCode();
-	
-	@XBRead("postcode")
-	public String getZipCode();
+	public final static IRI CLASS_ADDRESS = F.createIRI(PREFIX + "Address");
 
-	@XBRead("municipality")
-	public String getCity();
-	
-	@XBRead("building")
-	public String getBuilding();
+	public final static IRI LOCATOR_DESIGNATOR = F.createIRI(PREFIX + "locatorDesignator");
+	public final static IRI LOCATOR_NAME = F.createIRI(PREFIX + "locatorName");
+	public final static IRI POST_CODE = F.createIRI(PREFIX + "postCode") ;
+	public final static IRI POST_NAME = F.createIRI(PREFIX + "postName") ;
+	public final static IRI THOROUGHFARE = F.createIRI(PREFIX + "thoroughfare") ;
 
-	@XBRead("street")
-	public String getStreet();
-	
-	@XBRead("number")
-	public String getNumber();
-	
-	@XBRead("box")
-	public String getBox();
-
-	@XBRead("telephone")
-	public String getPhone();
-	
-	@XBRead("email")
-	public String getEmail();
-	
-	@XBRead("website")
-	public String getWebsite();
-	
-	@XBRead("contactCenterTelephone")
-	public String getContactPhone();
-	
-	@XBRead("contactCenter")
-	public String getContactSite();
 }
