@@ -25,7 +25,6 @@
  */
 package be.fedict.lodtools.cpsv.vocab;
 
-import static be.fedict.lodtools.cpsv.vocab.CPSV.PREFIX;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -40,6 +39,7 @@ public class CV {
 	
 	public final static String PREFIX = "http://data.europa.eu/m8g/";
 
+	public final static IRI CLASS_BUSINESS_EVENT = F.createIRI(PREFIX + "BusinessEvent");
 	public final static IRI CLASS_PARTICIPATION = F.createIRI(PREFIX + "Participation");	
 	public final static IRI CLASS_PUB_ORG = F.createIRI(PREFIX + "PublicOrganisation");	
 	

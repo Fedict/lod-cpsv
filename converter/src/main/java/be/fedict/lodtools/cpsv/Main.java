@@ -353,9 +353,6 @@ public class Main {
 				}
             }
 			
-			System.err.println("** ACTIVITIES ");
-			Activities.stream().forEach(a -> System.err.println(a.toString()));
-			
 			Rio.write(m, w, RDFFormat.NTRIPLES);
         }
 		LOG.info("--- END ---");

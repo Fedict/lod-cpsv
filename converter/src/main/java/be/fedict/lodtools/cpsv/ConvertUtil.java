@@ -29,6 +29,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Conversion util.
@@ -36,6 +38,8 @@ import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
  * @author Bart Hanssens <bart.hanssens@fedict.be>
  */
 public class ConvertUtil {
+	private final static Logger LOG = LoggerFactory.getLogger(ConvertUtil.class);
+		
 	private final static ValueFactory F = SimpleValueFactory.getInstance();
 		
 	/**
@@ -135,6 +139,8 @@ public class ConvertUtil {
 			case "STOP":
 				term = code;
 				break;
+			default:
+				LOG.error("Event code not found {}", code);
 		}
 		return F.createIRI(Consts.PREFIX_LIFE + term + "#id");
 	}
