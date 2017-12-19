@@ -28,10 +28,6 @@ package be.fedict.lodtools.cpsv;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.rdf4j.model.IRI;
-import org.eclipse.rdf4j.model.ValueFactory;
-import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
-
 /**
  * Convert EDRL / business.belgium.be to Core Public Service Vocab RDF Triples.
  * 
@@ -45,7 +41,7 @@ public class Consts {
 	public final static String PREFIX_LANG = "http://publications.europa.eu/resource/authority/language/";
 //	public final static String PREFIX_DDEIO = "http://dd.eionet.europa.eu/vocabulary/lau2/be/";
 	
-	public final static String PREFIX_LIFE = VOCAB_BELGIF + "/lifecycle";
+	public final static String PREFIX_LIFE = VOCAB_BELGIF + "/lifecycle/";
 	
 	public final static List<String> FREE = Arrays.asList(
 											"<div>0 euro</div>",

@@ -42,13 +42,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.apache.commons.codec.digest.DigestUtils;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
@@ -82,92 +79,7 @@ public class Main {
     private static String domain = null;
      
 	private final static Set<IRI> Activities = new HashSet();
-	
-	
-	private static IRI adminID(String bce, String code) {
-		if (bce != null && !bce.isEmpty()) {
-			String id = bce.substring(0, 4) + "_" + bce.substring(4, 7) 
-											+ "_" + bce.substring(7) + "#id";
-			return F.createIRI(Consts.ORG_BELGIF + id);
-		}
-		if (code != null && !code.isEmpty()) {
-			return F.createIRI(Consts.PUBSERV_BELGIF + "org/" + 
-											code.replaceAll(" ", "") + "#id");
-		}
-		return null;
-	}
 
-	private static IRI addrID(String mainCode, String subCode) {
-		return F.createIRI(Consts.PUBSERV_BELGIF + "addr/" 
-				+ DigestUtils.sha1Hex(mainCode + subCode) + "#id");
-	}
-	
-	/**
-	 * Create IRI identifier
-	 * 
-	 * @param id short code
-	 * @return IRI
-	 */
-	private static IRI genericID(String type, String id) {
-		return F.createIRI(Consts.PUBSERV_BELGIF + type + "/" + id + "#id");
-	}
-	
-	/**
-	 * Create IRI identifier for activity
-	 * 
-	 * @param sector sector code
-	 * @param activity activity code
-	 * @return IRI
-	 */
-	private static IRI sectorID(String sector, String activity) {
-		return F.createIRI(Consts.PUBSERV_BELGIF + "sector/" 
-				+ sector.substring(0, 2) + "/" + activity.substring(0, 2).trim() + "#id");
-	}
-	
-	/**
-	 * Create IRI for a cost 
-	 * 
-	 * @param cost text
-	 * @return IRI
-	 */
-	private static IRI costID(String cost) {
-		// Try to map different wordings of "free" to the same IRI
-		String id = Consts.FREE.contains(cost) ? "zero" : DigestUtils.sha1Hex(cost);
-		return genericID("cost", id);
-	}
-	/*
-	private static IRI legalBase(String id) {
-		
-	}*/
-	/**
-	 * Create language IRI identifier
-	 * 
-	 * @param code short language code
-	 * @return IRI
-	 */
-	private static IRI createLangID(String code) {
-		String term = "";
-		switch(code) {
-			case "NL": term = "NED"; break;
-			case "FR": term = "FRA"; break;
-			case "EN": term = "ENG"; break;
-			case "DE": term = "DEU"; break;
-		}
-		return F.createIRI(Consts.PREFIX_LANG + term);
-	}
-	
-	private static IRI lifecycleID(String code) {
-		String term = "";
-		switch(code) {
-			case "START":
-			case "ACTIVE":
-			case "STOP":
-				term = code;
-				break;
-		}
-		return F.createIRI(Consts.PREFIX_LIFE + term + "#id");
-	}
-	
 	/**
 	 * Process the list of cities and match to a complete region(s) in Belgium.
 	 * 
@@ -224,7 +136,7 @@ public class Main {
 		if (price == null || price.isEmpty()) {
 			return;
 		}
-		IRI cost = costID(price);
+		IRI cost = ConvertUtil.costID(price);
 		m.add(id, CV.HAS_COST, cost);
 		m.add(cost, RDFS.CLASS, CPSV.CLASS_COST);
 		m.add(cost, DCTERMS.DESCRIPTION, F.createLiteral(price, lang));
@@ -239,7 +151,7 @@ public class Main {
 	 */
 	private static void addActivities(Model m, IRI id, List<ActivityProjection> as) {
 		for (ActivityProjection a: as) {
-			IRI activity = sectorID(a.getSector(), a.getCode());
+			IRI activity = ConvertUtil.sectorID(a.getSector(), a.getCode());
 			Activities.add(activity);
 			m.add(id, CPSV.HAS_SECTOR, activity);
 		}
@@ -280,7 +192,7 @@ public class Main {
 		// Legal Framework
 		int cnt = 1;
 		for (LinkProjection l: ls) {
-			IRI fid = genericID("framework", code + "/" + cnt);
+			IRI fid = ConvertUtil.genericID("framework", code + "/" + cnt);
 			
 			m.add(id, CPSV.HAS_FRAMEWORK, fid);
 			m.add(fid, RDF.TYPE, CPSV.CLASS_FRAMEWORK);
@@ -291,7 +203,7 @@ public class Main {
 	}
 	
 	/**
-	 * Add framework
+	 * Add input
 	 * 
 	 * @param m
 	 * @param id
@@ -304,7 +216,7 @@ public class Main {
 		// Legal Framework
 		int cnt = 1;
 		for (LinkProjection l: ls) {
-			IRI fid = genericID("input", code + "/" + cnt);
+			IRI fid = ConvertUtil.genericID("input", code + "/" + cnt);
 			
 			m.add(id, CPSV.HAS_INPUT, fid);
 			m.add(fid, RDF.TYPE, CPSV.CLASS_INPUT);
@@ -312,6 +224,71 @@ public class Main {
 			
 			cnt++;
 		}
+	}
+	
+	/**
+	 * Add address
+	 * 
+	 * @param m
+	 * @param aid
+	 * @param ad 
+	 */
+	private static void addAddress(Model m, IRI aid, AddressProjection ad) {
+		IRI addrid = ConvertUtil.addrID(ad.getMainCode(), ad.getSubCode());
+		if (ad.getStreet() != null && !ad.getStreet().isEmpty()) {
+			m.add(aid, CV.HAS_ADDRESS, addrid);
+			m.add(addrid, RDF.TYPE, LOCN.CLASS_ADDRESS);
+			m.add(addrid, LOCN.THOROUGHFARE, F.createLiteral(ad.getStreet()));
+			m.add(addrid, LOCN.LOCATOR_DESIGNATOR, F.createLiteral(ad.getNumber()));
+			m.add(addrid, LOCN.POST_CODE, F.createLiteral(ad.getZipCode()));
+			m.add(addrid, LOCN.POST_NAME, F.createLiteral(ad.getCity()));
+		}
+	}
+	
+	private static void addAdministration(Model m, IRI id, AdministrationProjection ra, 
+										ResponsibleProjection r, String lang) {
+		if (ra != null) {
+			IRI aid = ConvertUtil.adminID(ra.getBCE(), ra.getCode());
+			m.add(id, DCTERMS.PUBLISHER, aid);
+			m.add(id, CV.HAS_COMPETENT_AUTH, aid);
+			m.add(aid, RDF.TYPE, CV.CLASS_PUB_ORG);
+			m.add(aid, RDF.TYPE, ORG.ORGANIZATION);
+			m.add(aid, DCTERMS.TITLE, F.createLiteral(ra.getName(), lang));
+		
+			AddressProjection ad = r.getAddress();
+			if (ad != null) {
+				addAddress(m, aid, ad);		
+			}
+		}
+	}
+	
+	private static void addService(Model m, IRI id, ProcedureProjection p, String lang) {
+		m.add(id, RDFS.CLASS, CPSV.CLASS_CPSV);
+		m.add(id, DCTERMS.TITLE, F.createLiteral(p.getTitle(), lang));
+		m.add(id, DCTERMS.DESCRIPTION, F.createLiteral(p.getDesc(), lang));
+		m.add(id, DCTERMS.ABSTRACT, F.createLiteral(p.getSummary(), lang));
+		m.add(id, CPSVBE.APPLIES, F.createLiteral(p.getApplies(), lang));
+		m.add(id, CPSVBE.APPLIES_EXCEPT, F.createLiteral(p.getAppliesExcept(), lang));
+		m.add(id, DCTERMS.LANGUAGE, ConvertUtil.langID(lang));
+
+		for (IRI region: regionalize(p.getCities())) {
+			m.add(id, DCTERMS.SPATIAL, region);
+		}
+		
+		String event = p.getLifecycle();
+		IRI cycle = ConvertUtil.lifecycleID(event);
+		m.add(id, CPSV.GROUPED_BY, cycle);
+		
+		addPrice(m, id, p.getPrice(), lang);
+
+		String freq = p.getFrequency();
+		if (freq != null && ! freq.trim().isEmpty()) {
+			m.add(id, DCTERMS.FREQUENCY, F.createLiteral(freq, lang));
+		}
+		
+		ResponsibleProjection r = p.getResponsible();
+		AdministrationProjection ra = r.getAdministration();
+		addAdministration(m, id, ra, r, lang);
 	}
 	
 	/**
@@ -329,58 +306,10 @@ public class Main {
 			LOG.warn("Not a procedure");
 			return;
 		}
-		IRI id = genericID("service", p.getID());
+		IRI id = ConvertUtil.genericID("service", p.getID());
 		String lang = p.getLanguage().toLowerCase();
-		
-		m.add(id, RDFS.CLASS, CPSV.CLASS_CPSV);
-		m.add(id, DCTERMS.TITLE, F.createLiteral(p.getTitle(), lang));
-		m.add(id, DCTERMS.DESCRIPTION, F.createLiteral(p.getDesc(), lang));
-		m.add(id, DCTERMS.ABSTRACT, F.createLiteral(p.getSummary(), lang));
-		m.add(id, CPSVBE.APPLIES, F.createLiteral(p.getApplies(), lang));
-		m.add(id, CPSVBE.APPLIES_EXCEPT, F.createLiteral(p.getAppliesExcept(), lang));
-		m.add(id, DCTERMS.LANGUAGE, createLangID(lang));
-
-		for (IRI region: regionalize(p.getCities())) {
-			m.add(id, DCTERMS.SPATIAL, region);
-		}
-		
-		String event = p.getLifecycle();
-		IRI cycle = lifecycleID(event);
-		m.add(id, CPSV.GROUPED_BY, cycle);
-		
-		addPrice(m, id, p.getPrice(), lang);
-
-		String freq = p.getFrequency();
-		if (freq != null && ! freq.trim().isEmpty()) {
-			m.add(id, DCTERMS.FREQUENCY, F.createLiteral(freq, lang));
-		}
-		
-		//System.err.println(p.getFormalities());
-		ResponsibleProjection r = p.getResponsible();
-		AdministrationProjection ra = r.getAdministration();
-		IRI aid = null;
-		if (ra != null) {
-			aid = adminID(ra.getBCE(), ra.getCode());
-			m.add(id, DCTERMS.PUBLISHER, aid);
-			m.add(id, CV.HAS_COMPETENT_AUTH, aid);
-			m.add(aid, RDF.TYPE, CV.CLASS_PUB_ORG);
-			m.add(aid, RDF.TYPE, ORG.ORGANIZATION);
-			m.add(aid, DCTERMS.TITLE, F.createLiteral(ra.getName(), lang));
-		
-			AddressProjection ad = r.getAddress();
-			if (ad != null) {
-				IRI addrid = addrID(ad.getMainCode(), ad.getSubCode());
-				if (ad.getStreet() != null && !ad.getStreet().isEmpty()) {
-					m.add(aid, CV.HAS_ADDRESS, addrid);
-					m.add(addrid, RDF.TYPE, LOCN.CLASS_ADDRESS);
-					m.add(addrid, LOCN.THOROUGHFARE, F.createLiteral(ad.getStreet()));
-					m.add(addrid, LOCN.LOCATOR_DESIGNATOR, F.createLiteral(ad.getNumber()));
-					m.add(addrid, LOCN.POST_CODE, F.createLiteral(ad.getZipCode()));
-					m.add(addrid, LOCN.POST_NAME, F.createLiteral(ad.getCity()));
-				}
-			}
-		}
-
+	
+		addService(m, id, p, lang);
 		addActivities(m, id, p.getActivities());
 		addFramework(m, id, p.getLegal(), lang, p.getID());
 		addInput(m, id, p.getForms(), lang, p.getID());	
