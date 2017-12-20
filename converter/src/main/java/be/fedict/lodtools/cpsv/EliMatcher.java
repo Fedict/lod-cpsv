@@ -47,6 +47,34 @@ public class EliMatcher {
 	private static DateTimeFormatter DATE_NL = 
 			DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.forLanguageTag("nl"));
 	
+	/**
+	 * Try to match framework using date, type and title
+	 * 
+	 * @param date publication date
+	 * @param type document type
+	 * @param title title of the document
+	 * @return 
+	 */
+	private static IRI match(String date, String type, String title) {
+		IRI matched = null;
+		
+		try {
+			URL u = new URL(MessageFormat.format(ELI, type, date, title));
+			
+			URLConnection conn = u.openConnection();
+			conn.setRequestProperty(HttpHeaders.ACCEPT, RDFFormat.NTRIPLES.getDefaultMIMEType());
+			InputStream in = conn.getInputStream();
+			
+			Model m = Rio.parse(in, "http://pubserv.belgif.be", RDFFormat.NTRIPLES);
+			m.subjects();
+		
+		} catch (MalformedURLException ex) {
+			LOG.error("Could not build url");
+		} catch (IOException ex) {
+			LOG.error("Error matching: {}", ex);
+		}
+		return matched;
+	}
 	
 	/**
 	 * Parse string to date
@@ -79,38 +107,13 @@ public class EliMatcher {
 		if (! matcher.matches()) {
 			return null;
 		}
+		
 		String m1 = matcher.group(1);
 		String type = (m1.equals("Wet") || m1.equals("Loi")) ? "LAW" : "DECREE";
 		
-		String m3 = matcher.group(3);
-		String date = parseDate(m3);
-	
-		System.err.println(str);
-		System.err.println(type);
-		System.err.println();
-		
+		String date = parseDate(matcher.group(3));
 		String title = m1 + " " + matcher.group(4);
-		
-		IRI matched = null;
-		
-	/*
-		try {
-			
-
-			URL u = new URL(MessageFormat.format(ELI, type, date, title));
-			
-			URLConnection conn = u.openConnection();
-			conn.setRequestProperty(HttpHeaders.ACCEPT, RDFFormat.NTRIPLES.getDefaultMIMEType());
-			InputStream in = conn.getInputStream();
-			
-			Model m = Rio.parse(in, "http://pubserv.belgif.be", RDFFormat.NTRIPLES);
-			m.subjects();
-		
-		} catch (MalformedURLException ex) {
-			LOG.error("Could not build url");
-		} catch (IOException ex) {
-			LOG.error("Error matching: {}", ex);
-		}
-	*/	return matched;
+	
+		return match(date, type, title);
 	}
 }
