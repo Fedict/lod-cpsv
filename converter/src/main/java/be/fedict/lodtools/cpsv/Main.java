@@ -46,9 +46,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
+import org.eclipse.rdf4j.model.Value;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -276,8 +279,9 @@ public class Main {
 		}
 		
 		String event = p.getLifecycle();
-		IRI cycle = ConvertUtil.lifecycleID(event);
-		m.add(id, CPSV.GROUPED_BY, cycle);
+		IRI evid = ConvertUtil.lifecycleID(event);
+		m.add(id, CPSV.GROUPED_BY, evid);
+		m.add(evid, RDF.TYPE, CV.CLASS_BUSINESS_EVENT);
 		
 		addPrice(m, id, p.getPrice(), lang);
 
@@ -313,6 +317,26 @@ public class Main {
 		addActivities(m, id, p.getActivities());
 		addFramework(m, id, p.getLegal(), lang, p.getID());
 		addInput(m, id, p.getForms(), lang, p.getID());	
+	}
+
+	/**
+	 * Match ELI frameworks
+	 * 
+	 * @param m RDF models
+	 */
+	private static void matchFrameworks(Model m) {
+		Model fws = m.filter(null, RDF.TYPE, CPSV.CLASS_FRAMEWORK);
+		
+		for(Resource fw: fws.subjects()) {
+			Set<Value> vals = m.filter(fw, DCTERMS.TITLE, null).objects();
+			if (vals != null) {
+				String[] arr = vals.stream().map(Value::stringValue)
+											.toArray(String[]::new);
+				for	(String s: arr) {
+					EliMatcher.match(s);
+				}
+			}
+		}
 	}
 	
     /**
@@ -353,6 +377,8 @@ public class Main {
 				}
             }
 			
+			matchFrameworks(m);
+						
 			Rio.write(m, w, RDFFormat.NTRIPLES);
         }
 		LOG.info("--- END ---");
