@@ -38,13 +38,13 @@ public class EliMatcher {
 				Pattern.compile("(Wet|Loi|Decreet|Décret) (van|de|du) " +
 						"(\\d{1,2} \\w+ \\d{4}) (.*)");
 		
-	private static String ELI = new String("https://id.belgium.be" +
-								"/_query/eli/match?date={0}&type={1}&q={2}");
+	private final static String ELI = "https://id.belgium.be" +
+								"/_query/eli/match?date={0}&type={1}&q={2}";
 	
-	private static DateTimeFormatter DATE_FR = 
+	private final static DateTimeFormatter DATE_FR = 
 			DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.forLanguageTag("fr"));
 	
-	private static DateTimeFormatter DATE_NL = 
+	private final static DateTimeFormatter DATE_NL = 
 			DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.forLanguageTag("nl"));
 	
 	/**
@@ -59,7 +59,7 @@ public class EliMatcher {
 		IRI matched = null;
 		
 		try {
-			URL u = new URL(MessageFormat.format(ELI, type, date, title));
+			URL u = new URL(MessageFormat.format(ELI, date, type, title));
 			
 			URLConnection conn = u.openConnection();
 			conn.setRequestProperty(HttpHeaders.ACCEPT, RDFFormat.NTRIPLES.getDefaultMIMEType());
