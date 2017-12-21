@@ -333,7 +333,8 @@ public class Main {
 				String[] arr = vals.stream().map(Value::stringValue)
 											.toArray(String[]::new);
 				for	(String s: arr) {
-					EliMatcher.match(s);
+					Set<IRI> elis = EliMatcher.match(s);
+					elis.forEach(e -> m.add(fw, DCTERMS.IDENTIFIER, e));
 				}
 			}
 		}

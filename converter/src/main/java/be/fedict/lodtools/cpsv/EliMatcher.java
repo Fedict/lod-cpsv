@@ -12,18 +12,22 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
-import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
@@ -57,25 +61,24 @@ public class EliMatcher {
 	 * @param title title of the document
 	 * @return 
 	 */
-	private static IRI match(String date, String type, String title) {
-		IRI matched = null;
+	private static Set<IRI> match(String date, String type, String title) {
+		Set<IRI> matched = Collections.emptySet();
 		
 		URLConnection conn;
 		
 		try {
-			URL u = new URL(MessageFormat.format(ELI, date, type, title));
+			String enc = URLEncoder.encode(title, StandardCharsets.UTF_8.toString());
+			URL u = new URL(MessageFormat.format(ELI, date, type, enc));
 			conn = u.openConnection();
 			conn.setRequestProperty(HttpHeaders.ACCEPT, 
 									RDFFormat.NTRIPLES.getDefaultMIMEType());
 			
 			try (InputStream in = conn.getInputStream()) {
 				Model m = Rio.parse(in, "http://pubserv.belgif.be", RDFFormat.NTRIPLES);
-				Set<Resource> subjects = m.subjects();
-				for(Resource s: subjects) {
-					System.err.println(s.stringValue());
-				}
+				matched = m.subjects().stream()
+										.map(IRI.class::cast)
+										.collect(Collectors.toSet());
 			}
-			
 		} catch (MalformedURLException ex) {
 			LOG.error("Could not build url");
 		} catch (IOException ex) {
@@ -110,7 +113,7 @@ public class EliMatcher {
 	 * @param str
 	 * @return matched
 	 */
-	public static IRI match(String str) {
+	public static Set<IRI> match(String str) {
 		Matcher matcher = p.matcher(str);
 		if (! matcher.matches()) {
 			return null;
