@@ -17,11 +17,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Resource;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 
@@ -58,16 +60,22 @@ public class EliMatcher {
 	private static IRI match(String date, String type, String title) {
 		IRI matched = null;
 		
+		URLConnection conn;
+		
 		try {
 			URL u = new URL(MessageFormat.format(ELI, date, type, title));
+			conn = u.openConnection();
+			conn.setRequestProperty(HttpHeaders.ACCEPT, 
+									RDFFormat.NTRIPLES.getDefaultMIMEType());
 			
-			URLConnection conn = u.openConnection();
-			conn.setRequestProperty(HttpHeaders.ACCEPT, RDFFormat.NTRIPLES.getDefaultMIMEType());
-			InputStream in = conn.getInputStream();
+			try (InputStream in = conn.getInputStream()) {
+				Model m = Rio.parse(in, "http://pubserv.belgif.be", RDFFormat.NTRIPLES);
+				Set<Resource> subjects = m.subjects();
+				for(Resource s: subjects) {
+					System.err.println(s.stringValue());
+				}
+			}
 			
-			Model m = Rio.parse(in, "http://pubserv.belgif.be", RDFFormat.NTRIPLES);
-			m.subjects();
-		
 		} catch (MalformedURLException ex) {
 			LOG.error("Could not build url");
 		} catch (IOException ex) {
