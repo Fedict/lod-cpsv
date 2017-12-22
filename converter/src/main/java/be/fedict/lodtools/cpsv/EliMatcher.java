@@ -6,6 +6,7 @@
 package be.fedict.lodtools.cpsv;
 
 import com.google.common.net.HttpHeaders;
+import java.io.FileNotFoundException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,9 +79,12 @@ public class EliMatcher {
 				matched = m.subjects().stream()
 										.map(IRI.class::cast)
 										.collect(Collectors.toSet());
+				LOG.info("Mapped {}", title);
 			}
 		} catch (MalformedURLException ex) {
 			LOG.error("Could not build url");
+		} catch (FileNotFoundException ex) {
+			LOG.warn("No matching ELI for {}", title);
 		} catch (IOException ex) {
 			LOG.error("Error matching: {}", ex);
 		}
@@ -116,7 +120,7 @@ public class EliMatcher {
 	public static Set<IRI> match(String str) {
 		Matcher matcher = p.matcher(str);
 		if (! matcher.matches()) {
-			return null;
+			return Collections.EMPTY_SET;
 		}
 		
 		String m1 = matcher.group(1);
